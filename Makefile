@@ -10,8 +10,6 @@ ifeq ($(filter $(GOOS), openbsd netbsd soloaris plan9), )
 else
 endif
 
-TAGS = -tags ts2019
-
 # GO_SOURCES = $(wildcard *.go)
 # PROTO_SOURCES = $(wildcard **/*.proto)
 GO_SOURCES = $(call rwildcard,,*.go)
@@ -24,7 +22,7 @@ build:
 dev: lint test build
 
 test:
-	gotestsum -- $(TAGS) -short -coverprofile=coverage.out ./...
+	gotestsum -- -short -coverprofile=coverage.out ./...
 
 test_integration:
 	docker run \
@@ -33,8 +31,9 @@ test_integration:
 		--name headscale-test-suite \
 		-v $$PWD:$$PWD -w $$PWD/integration \
 		-v /var/run/docker.sock:/var/run/docker.sock \
+		-v $$PWD/control_logs:/tmp/control \
 		golang:1 \
-		go run gotest.tools/gotestsum@latest -- $(TAGS) -failfast ./... -timeout 120m -parallel 8
+		go run gotest.tools/gotestsum@latest -- -failfast ./... -timeout 120m -parallel 8
 
 lint:
 	golangci-lint run --fix --timeout 10m
